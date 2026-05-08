@@ -11,7 +11,7 @@ import {
 } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import { IconCheck, IconCircleMinus, IconUpload, IconX } from '@tabler/icons-react';
-import axios from 'axios';
+import axios from '../axios_config';
 import { notifications } from '@mantine/notifications';
 import { apiRoutes } from '@/apiRoutes.tsx';
 import {t} from "i18next";
@@ -227,9 +227,9 @@ export default function PluginUpdates() {
                 />
                 <Button loading={uploading} onClick={(e) => { upload_plugin(e); }}>Upload Plugin</Button>
             </Modal>
-            <Modal opened={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title={t("Are you sure you want to delete ${deleteName}?")}>
-                <Button onClick={() => delete_plugin()} mr="md">Yes</Button>
-                <Button onClick={() => setDeleteModalOpen(false)}>No</Button>
+            <Modal opened={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title={t("Are you sure you want to delete {{deleteName}}?", { deleteName })}>
+                <Button color="red" onClick={() => delete_plugin()} mr="md">{t("Delete")}</Button>
+                <Button variant="default" onClick={() => setDeleteModalOpen(false)}>{t("Cancel")}</Button>
             </Modal>
         </>
     );

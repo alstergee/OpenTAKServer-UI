@@ -7,7 +7,7 @@ import {
 } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import {IconCheck, IconCircleMinus, IconDownload, IconInfoCircle, IconUpload, IconX} from '@tabler/icons-react';
-import axios from 'axios';
+import axios from '../axios_config';
 import { notifications } from '@mantine/notifications';
 import { socket } from '@/socketio';
 import { apiRoutes } from '../apiRoutes';

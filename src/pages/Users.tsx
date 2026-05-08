@@ -57,7 +57,11 @@ export default function Users() {
     const [confirm_password, setConfirmPassword] = useState('');
     const [role, setRole] = useState('');
     const [allGroups, setAllGroups] = useState<ComboboxItem[]>([])
-    const [groups, setGroups] = useState<string[]>([]);
+    // Two SEPARATE selections — was a single shared `groups` array bound to
+    // both MultiSelects (in/out), so adding to OUT silently wiped IN. Audit
+    // blocker. Same fix as Groups.tsx.
+    const [inGroups, setInGroups] = useState<string[]>([]);
+    const [outGroups, setOutGroups] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [memberships, setMemberships] = useState<TableData>({
         caption: '',
@@ -165,10 +169,12 @@ export default function Users() {
     }
 
     function addUserToGroups(direction: string) {
+        const groups = direction === 'IN' ? inGroups : outGroups;
+        if (groups.length === 0) return;
         axios.put(apiRoutes.userGroups, {username, direction, groups}).then(r => {
             if (r.status === 200) {
                 getMemberships(username);
-                setGroups([]);
+                if (direction === 'IN') setInGroups([]); else setOutGroups([]);
             }
         }).catch(err => {
             console.log(err);
@@ -439,14 +445,15 @@ export default function Users() {
                 <Paper withBorder p="md" mb="md">
                     <Grid align="flex-end" justify="space-between">
                         <Grid.Col span={10}>
-                            <Title order={6} mb="md">Direction: IN</Title>
+                            <Title order={6} mb="md">{t("Direction")}: IN</Title>
                             <MultiSelect
-                                placeholder="Search"
+                                placeholder={t("Search")}
                                 searchable
                                 clearable
-                                nothingFoundMessage="Nothing found..."
-                                label="Select Groups"
-                                onChange={(value) => {setGroups(value)}}
+                                nothingFoundMessage={t("Nothing found...")}
+                                label={t("Select Groups")}
+                                value={inGroups}
+                                onChange={setInGroups}
                                 data={allGroups} />
                         </Grid.Col>
                         <Grid.Col span={2}>
@@ -463,8 +470,9 @@ export default function Users() {
                                 searchable
                                 clearable
                                 nothingFoundMessage={t("Nothing found...")}
-                                label="Select Groups"
-                                onChange={(value) => {setGroups(value)}}
+                                label={t("Select Groups")}
+                                value={outGroups}
+                                onChange={setOutGroups}
                                 data={allGroups} />
                         </Grid.Col>
                         <Grid.Col span={2}>

@@ -12,7 +12,7 @@ import {
     Flex, Modal, Group, Divider, Box
 } from "@mantine/core";
 import React, {useEffect, useState} from "react";
-import axios from "axios";
+import axios from '../axios_config';
 import {apiRoutes} from "@/apiRoutes.tsx";
 import {notifications} from "@mantine/notifications";
 import {IconCheck, IconCircleMinus, IconX, IconDownload} from "@tabler/icons-react";
@@ -270,7 +270,7 @@ export default function LinkTakGov() {
             <Container display={linked ? "none" : "block"} mt="md">
                 <Title ta="center" order={2}>{t("Link your TAK.gov account")}</Title>
                 <Text ta="center">{t("Linking your TAK.gov account allows you to download plugins directly from your TAK.gov account \
-                to this server and make them available to EUDs. Please log into your TAK.gov account before starting.")}"</Text>
+                to this server and make them available to EUDs. Please log into your TAK.gov account before starting.")}</Text>
 
                 <Divider label={t("Step 1")} labelPosition="center" pt="md" />
                 <Center><Button onClick={() => {get_codes()}} mt="md">{t("Get Link Code")}</Button></Center>

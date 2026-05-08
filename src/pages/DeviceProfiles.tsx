@@ -10,7 +10,7 @@ import {
 } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import { IconCircleMinus, IconUpload, IconX } from '@tabler/icons-react';
-import axios from 'axios';
+import axios from '../axios_config';
 import { notifications } from '@mantine/notifications';
 import { formatISO, parseISO } from 'date-fns';
 import { apiRoutes } from '../apiRoutes';

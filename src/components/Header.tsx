@@ -16,6 +16,7 @@ import Logo from '../images/ots-logo.png';
 import classes from './Header.module.css';
 import axios from '../axios_config';
 import { apiRoutes } from '../apiRoutes';
+import { socket } from '../socketio';
 
 export const Header = () => {
     const { setColorScheme } = useMantineColorScheme();
@@ -25,10 +26,9 @@ export const Header = () => {
     const navigate = useNavigate();
 
     const logout = () => {
-        axios.post(
-            apiRoutes.logout
-        ).then(r => {
+        axios.post(apiRoutes.logout).then(r => {
             if (r.status === 200) {
+                try { socket.disconnect(); } catch { /* ignore */ }
                 localStorage.clear();
                 navigate('/');
             }

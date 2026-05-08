@@ -24,6 +24,7 @@ import axios from './axios_config';
 import { apiRoutes } from './apiRoutes';
 import Navbar from './components/Navbar/Navbar';
 import { socket } from './socketio';
+import { useRouteTitle } from './useRouteTitle';
 import {t} from "i18next";
 
 export function DefaultLayout() {
@@ -38,7 +39,24 @@ export function DefaultLayout() {
 
     const navigate = useNavigate();
 
+    // Drive `document.title` per route so browser tabs are navigable.
+    // Centralised in src/useRouteTitle.ts so adding a page doesn't require
+    // touching the page component itself.
+    useRouteTitle();
+
     const [socketConnected, setSocketConnected] = useState(false);
+
+    // Auth-expiry handler — listens for the 'mc-auth-expired' custom event
+    // dispatched by axios_config.tsx when any /api/* call returns 401. Doing
+    // this through React Router (rather than window.location.href) avoids the
+    // hard-reload race that was leaving the page blank.
+    useEffect(() => {
+        function onAuthExpired() {
+            navigate('/login', { replace: true });
+        }
+        window.addEventListener('mc-auth-expired', onAuthExpired);
+        return () => window.removeEventListener('mc-auth-expired', onAuthExpired);
+    }, [navigate]);
 
     useEffect(() => {
         function onConnect() {
@@ -86,10 +104,12 @@ export function DefaultLayout() {
     }, []);
 
     const logout = () => {
-        axios.post(
-            apiRoutes.logout
-        ).then(r => {
+        axios.post(apiRoutes.logout).then(r => {
             if (r.status === 200) {
+                // Tear down the socket so it doesn't keep reconnecting against
+                // the server with the dead session — was a leaked connection
+                // until the tab closed. Audit feedback note + perf agent finding.
+                try { socket.disconnect(); } catch { /* ignore */ }
                 localStorage.clear();
                 navigate('/');
             }

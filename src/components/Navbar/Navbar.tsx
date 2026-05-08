@@ -49,6 +49,7 @@ import classes from './Navbar.module.css';
 import DarkModeSwitch from '../DarkModeSwitch';
 import axios from '../../axios_config';
 import { apiRoutes } from '../../apiRoutes';
+import { socket } from '../../socketio';
 import MeshtasticLogo from './MeshtasticLogo';
 import {DateTimePicker} from "@mantine/dates";
 import {t} from "i18next";
@@ -167,10 +168,9 @@ export default function Navbar() {
     const navigate = useNavigate();
 
     const logout = () => {
-        axios.post(
-            apiRoutes.logout
-        ).then(r => {
+        axios.post(apiRoutes.logout).then(r => {
             if (r.status === 200) {
+                try { socket.disconnect(); } catch { /* ignore */ }
                 localStorage.clear();
                 navigate('/');
             }

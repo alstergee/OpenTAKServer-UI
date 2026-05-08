@@ -14,7 +14,7 @@ import {
     Tooltip,
     Switch,
 } from "@mantine/core"
-import axios from "axios";
+import axios from '../axios_config';
 import {apiRoutes} from "@/apiRoutes.tsx";
 import {notifications} from "@mantine/notifications";
 import {IconUsersMinus, IconX, IconDeviceMobile, IconUsersGroup} from "@tabler/icons-react";

@@ -14,7 +14,7 @@ import {
     IconInfoCircle
 } from "@tabler/icons-react";
 import { parse, stringify } from 'yaml'
-import axios from "axios";
+import axios from '../axios_config';
 import {notifications} from "@mantine/notifications";
 import {apiRoutes} from "@/apiRoutes.tsx";
 import {t} from "i18next";

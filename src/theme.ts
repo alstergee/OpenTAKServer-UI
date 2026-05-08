@@ -14,6 +14,13 @@ const paleBlue: MantineColorsTuple = [
 ];
 export const theme = createTheme({
   defaultRadius: 'md',
+  // The paleBlue tuple was previously defined but never wired up, so every
+  // Mantine "primary" component fell back to the default Mantine blue
+  // (#228be6) — clashing with the dashboard's #2a2d43 chrome and making the
+  // whole app feel like two different products glued together. Setting it as
+  // the primary color cascades through every Button/Switch/Pagination/etc.
+  // and into chat-inject's var(--mantine-primary-color-filled) lookups.
+  primaryColor: 'paleBlue',
   colors: {
     paleBlue,
   },

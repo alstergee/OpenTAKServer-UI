@@ -8,7 +8,7 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import React, { useEffect, useState } from 'react';
-import axios from "axios";
+import axios from '../axios_config';
 import {apiRoutes} from "@/apiRoutes.tsx";
 import {IconCircleMinus, IconUserCog, IconUserMinus, IconX} from "@tabler/icons-react";
 import {t} from "i18next";
@@ -36,7 +36,11 @@ export default function Groups() {
     const [deleteGroupOpen, setDeleteGroupOpen] = useState(false);
     const [showAddGroup, setShowAddGroup] = useState(false);
     const [showAddUserToGroup, setShowAddUserToGroup] = useState(false);
-    const [users, setUsers] = useState<string[]>([])
+    // Two SEPARATE selections — was a single shared `users` array bound to
+    // both MultiSelects, so adding to OUT silently wiped the IN selection
+    // (audit blocker #1). One state per direction.
+    const [inSelection, setInSelection] = useState<string[]>([]);
+    const [outSelection, setOutSelection] = useState<string[]>([]);
     const [allUsers, setAllUsers] = useState<ComboboxItem[]>([]);
     const [inUsers, setInUsers] = useState<ComboboxItem[]>([]);
     const [outUsers, setOutUsers] = useState<ComboboxItem[]>([]);
@@ -114,10 +118,12 @@ export default function Groups() {
     }
 
     function addUsersToGroup(direction: string) {
+        const users = direction === 'IN' ? inSelection : outSelection;
+        if (users.length === 0) return;
         axios.put(apiRoutes.groups, {users, group_name: group, direction}).then((r) => {
             if (r.status === 200) {
                 getGroupMembers(group);
-                setUsers([]);
+                if (direction === 'IN') setInSelection([]); else setOutSelection([]);
             }
         }).catch(err => {
             console.log(err);
@@ -275,7 +281,8 @@ export default function Groups() {
                                 clearable
                                 nothingFoundMessage={t("Nothing found...")}
                                 label={t("Select Users")}
-                                onChange={(value) => {setUsers(value)}}
+                                value={inSelection}
+                                onChange={setInSelection}
                                 data={allUsers} />
                         </Grid.Col>
                         <Grid.Col span={2}>
@@ -283,16 +290,18 @@ export default function Groups() {
                         </Grid.Col>
                     </Grid>
                 </Paper>
-                <Paper withBorder title={t("Direction: OUT")} mb="md" p="md">
+                <Paper withBorder mb="md" p="md">
                     <Grid align="flex-end" justify="space-between">
                         <Grid.Col span={10}>
                             <Title order={6} mb="md">Direction: OUT</Title>
                             <MultiSelect
                                 placeholder="Search"
                                 searchable
+                                clearable
                                 nothingFoundMessage={t("Nothing found...")}
                                 label={t("Select Users")}
-                                onChange={(value) => {setUsers(value)}}
+                                value={outSelection}
+                                onChange={setOutSelection}
                                 data={allUsers} />
                         </Grid.Col>
                         <Grid.Col span={2}>

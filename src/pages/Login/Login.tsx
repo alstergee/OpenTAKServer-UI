@@ -38,6 +38,11 @@ export default function Login(props: PaperProps) {
     const [emailEnabled, setEmailEnabled] = useState(false);
     const [authCode, setAuthCode] = useState<string>();
     const [ldapEnabled, setLdapEnabled] = useState(false);
+    // "Remember me" was previously a decorative checkbox with no state. Restoring
+    // the saved preference on mount + actually passing it to the login endpoint.
+    const [rememberMe, setRememberMe] = useState<boolean>(() => {
+        try { return localStorage.getItem('rememberMe') === 'true'; } catch { return false; }
+    });
     const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
 
     useEffect(() => {
@@ -97,9 +102,10 @@ export default function Login(props: PaperProps) {
         if (ldapEnabled)
             loginUrl = apiRoutes.ldapLogin;
 
+        try { localStorage.setItem('rememberMe', rememberMe ? 'true' : 'false'); } catch { /* ignore */ }
         axios.post(
             loginUrl,
-            JSON.stringify({ username, password, submit: 'Login', csrf_token: csrfToken })
+            JSON.stringify({ username, password, remember: rememberMe, submit: 'Login', csrf_token: csrfToken })
         ).then(r => {
             if (r.status === 200) {
                 localStorage.setItem('loggedIn', 'true');
@@ -207,15 +213,32 @@ export default function Login(props: PaperProps) {
                     </Stack>
                 )}
 
-                <Paper radius="md" p="xl" withBorder {...props} bg={computedColorScheme === 'light' ? 'white' : 'dark.7'}>
+                <Paper
+                  component="form"
+                  radius="md" p="xl" withBorder
+                  {...props}
+                  bg={computedColorScheme === 'light' ? 'white' : 'dark.7'}
+                  onSubmit={(e: React.FormEvent) => {
+                    // Containerizing the credentials inside a real <form> lets
+                    // password managers + browser autofill + Enter-to-submit
+                    // all work without us having to glue them together. The
+                    // submit handler dispatches based on the current `type`.
+                    e.preventDefault();
+                    if (type === 'login') handleLogin(e as any);
+                    else if (type === 'register') handleRegister(e as any);
+                    else if (type === 'Reset Password') handleReset(e as any);
+                  }}
+                >
                     <Stack>
                         {(type === 'register' || type === 'Reset Password') && emailEnabled && (
                             <TextInput
                               required
+                              type="email"
                               label="Email"
                               placeholder="me@example.com"
                               value={email}
                               onChange={(event) => setEmail(event.currentTarget.value)}
+                              autoComplete="email"
                               radius="md"
                             />
                         )}
@@ -228,6 +251,7 @@ export default function Login(props: PaperProps) {
                                   placeholder="Username"
                                   value={username}
                                   onChange={(event) => setUsername(event.currentTarget.value)}
+                                  autoComplete="username"
                                   radius="md"
                                 />
 
@@ -237,6 +261,7 @@ export default function Login(props: PaperProps) {
                                   placeholder="Your password"
                                   value={password}
                                   onChange={(event) => setPassword(event.currentTarget.value)}
+                                  autoComplete={type === 'register' ? 'new-password' : 'current-password'}
                                   radius="md"
                                 />
                             </div>
@@ -271,7 +296,11 @@ export default function Login(props: PaperProps) {
 
                     {type === 'login' ?
                         <Group justify="space-between" mt="lg">
-                            <Checkbox label="Remember me" />
+                            <Checkbox
+                              label="Remember me"
+                              checked={rememberMe}
+                              onChange={(e) => setRememberMe(e.currentTarget.checked)}
+                            />
                             {emailEnabled ?
                             <Anchor component="button" size="sm" onClick={() => setType('Reset Password')}>
                                 Forgot password?
@@ -298,12 +327,8 @@ export default function Login(props: PaperProps) {
                                                           </Center>}
                         </Anchor>
                         <Button
-                          radius="xl"
-                          onClick={(e) => {
-                            if (type === 'login') {handleLogin(e);}
-                            else if (type === 'register') {handleRegister(e);}
-                            else if (type === 'Reset Password') {handleReset(e);}
-                          }}
+                          type="submit"
+                          radius="md"
                           display={type === 'login' || type === 'register' || type === 'Reset Password' ? 'block' : 'None'}
                         >
                             {upperFirst(type)}

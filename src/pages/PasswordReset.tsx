@@ -10,7 +10,7 @@ import {
     Stack,
     Title, useComputedColorScheme,
 } from '@mantine/core';
-import axios from 'axios';
+import axios from '../axios_config';
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconX } from '@tabler/icons-react';
 import Logo from '../images/ots-logo.png';
