@@ -46,7 +46,6 @@ export default function ScheduledJobs() {
                 setRunningJob('');
             }
         }).catch(error => {
-            console.log(error);
             notifications.show({
                 title: t('Error'),
                 message: error.response.data.errors,
@@ -72,7 +71,6 @@ export default function ScheduledJobs() {
                 });
             }
         }).catch(error => {
-            console.log(error);
             notifications.show({
                 title: t('Error'),
                 message: error.response.data.errors,
@@ -97,7 +95,6 @@ export default function ScheduledJobs() {
                 });
             }
         }).catch(error => {
-            console.log(error);
             notifications.show({
                 title: t('Error'),
                 message: error.response.data.errors,
@@ -123,7 +120,6 @@ export default function ScheduledJobs() {
                 getJobs();
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Error'),
                 message: err.message,

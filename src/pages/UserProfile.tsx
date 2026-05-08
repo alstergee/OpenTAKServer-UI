@@ -95,7 +95,6 @@ export default function UserProfile() {
                 setUser(r.data);
             }
         }).catch((err) => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to get user info'),
                 message: err.response.data.error,
@@ -113,7 +112,6 @@ export default function UserProfile() {
                 setUser(r.data.results[0]);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to get user info'),
                 message: err.response.data.error,
@@ -162,7 +160,6 @@ export default function UserProfile() {
                 get_user_info();
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed remove user from group'),
                 message: err.response.data.error,

@@ -136,7 +136,6 @@ export default function Meshtastic() {
                     });
                 }
             }).catch(err => {
-                console.log(err);
                 notifications.show({
                     title: t('Failed to add channel'),
                     message: err.response.data.error,
@@ -172,7 +171,6 @@ export default function Meshtastic() {
                 getChannels();
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to add channel'),
                 message: err.response.data.error,
@@ -270,7 +268,6 @@ export default function Meshtastic() {
             setDeleteChanelOpen(false);
             getChannels();
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to delete channel'),
                 message: err.response.data.error,

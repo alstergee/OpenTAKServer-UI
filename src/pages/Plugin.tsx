@@ -90,7 +90,6 @@ export default function Plugin() {
                 setEditedConfig(stringify(r.data));
             }
         }).catch((err) => {
-            console.log(err);
             notifications.show({
                 title: t("Failed to get plugin config"),
                 message: t("Please restart OpenTAKServer"),
@@ -107,7 +106,6 @@ export default function Plugin() {
                 setEnabled(r.data.enabled);
             }
         }).catch((err) => {
-            console.log(err);
             notifications.show({
                 title: t("Error getting plugin data"),
                 message: err.response.data.error,
@@ -148,7 +146,6 @@ export default function Plugin() {
                     })
                 }
             }).catch((err) => {
-                console.log(err);
                 notifications.show({
                     title: t('Failed to update plugin config'),
                     message: err.response.data.error,
@@ -188,7 +185,6 @@ export default function Plugin() {
                     })
                 }
         }).catch((err) => {
-            console.log(err);
             notifications.show({
                 title: t('Failed'),
                 message: '',

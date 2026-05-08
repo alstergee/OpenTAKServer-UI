@@ -128,7 +128,6 @@ export default function DataPackages() {
                         });
                     }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Delete Failed'),
                 message: err.response.data.error,
@@ -230,7 +229,6 @@ export default function DataPackages() {
                 setGeneratingDataPackage(false);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: 'Error',
                 message: err.response.data.error,

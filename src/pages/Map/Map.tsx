@@ -451,7 +451,6 @@ export default function Map() {
                         });
                     }
                 }).catch(err => {
-                    console.log(err);
                     notifications.show({
                         message: 'Failed to get map state',
                         color: 'red',

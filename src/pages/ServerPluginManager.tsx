@@ -201,7 +201,6 @@ export default function ServerPluginManager() {
                 }
             }).catch((err) => {
                 setInstallingPlugin(false);
-                console.log(err);
                 notifications.show({
                     title: 'Failed to upload plugin',
                     message: err.response.data.error,
@@ -218,7 +217,6 @@ export default function ServerPluginManager() {
                 setPluginRepo(r.data.repo_url);
             }
         }).catch((err) => {
-            console.log(err);
             notifications.show({
                 title: 'Failed to get repo URL',
                 message: err.response.data.error,
@@ -235,7 +233,6 @@ export default function ServerPluginManager() {
                 if (r.status === 200) {
                     let highestVersion: string|null = null;
                     Object.entries(r.data.result).forEach(([key, value]) => {
-                        console.log(key);
                         if (highestVersion === null) {
                             highestVersion = key;
                             metadata = value;
@@ -251,7 +248,6 @@ export default function ServerPluginManager() {
                 }
                 return metadata;
         }).catch((err) => {
-            console.log(err);
             notifications.show({
                 title: 'Failed to create data package',
                 message: `Response Code: ${err.response.status}`,
@@ -267,7 +263,6 @@ export default function ServerPluginManager() {
                 setAbout(r.data);
             }
         }).catch((err) => {
-            console.log(err);
             notifications.show({
                 title: 'Failed to get plugin info',
                 message: err.response.data.error,
@@ -293,7 +288,6 @@ export default function ServerPluginManager() {
             }
             setLoading(false);
         }).catch((err) => {
-            console.log(err);
             setLoading(false);
             notifications.show({
                 message: 'Failed to get installed plugins',
@@ -323,7 +317,6 @@ export default function ServerPluginManager() {
             }
             setLoading(false);
         }).catch((err) => {
-            console.log(err);
             setLoading(false);
             notifications.show({
                 message: 'Failed to get available plugins',

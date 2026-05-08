@@ -118,7 +118,6 @@ export default function PluginUpdates() {
                     setPackages(tableData);
                 }
             }).catch(err => {
-            console.log(err);
             notifications.show({
                 icon: <IconX />,
                 title: t('Failed to get data'),
@@ -157,7 +156,6 @@ export default function PluginUpdates() {
                     setUploadPluginOpen(false);
                 }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 icon: <IconX />,
                 color: 'red',
@@ -181,7 +179,6 @@ export default function PluginUpdates() {
                 setDeleteModalOpen(false);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 icon: <IconX />,
                 title: t('Failed to delete plugin'),

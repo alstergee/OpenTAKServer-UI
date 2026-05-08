@@ -89,7 +89,6 @@ export default function Groups() {
                 }
             }).catch((err) => {
                 setLoading(false);
-                console.log(err);
                 notifications.show({
                     title: t('Failed to get groups'),
                     message: err.response.data.error,
@@ -100,14 +99,12 @@ export default function Groups() {
     }
 
     function addGroup() {
-        console.log(newGroupProperties)
         axios.post(apiRoutes.groups, newGroupProperties).then((r) => {
             if (r.status === 200) {
                 setShowAddGroup(false);
                 get_groups();
             }
         }).catch((err) => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to create group'),
                 message: err.response.data.error,
@@ -126,7 +123,6 @@ export default function Groups() {
                 if (direction === 'IN') setInSelection([]); else setOutSelection([]);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to add user to group'),
                 message: err.response.data.error,
@@ -146,7 +142,6 @@ export default function Groups() {
                 setAllUsers(all_users);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to get user list'),
                 message: err.response.data.error,
@@ -162,7 +157,6 @@ export default function Groups() {
                 get_groups();
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: `Failed delete ${group_name}`,
                 message: err.response.data.error,
@@ -178,7 +172,6 @@ export default function Groups() {
                 getGroupMembers(group_name);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed remove user from group'),
                 message: err.response.data.error,
@@ -223,12 +216,10 @@ export default function Groups() {
 
                     if (row.direction === "IN") {
                         inMembers.filter((member) => member === row.username);
-                        console.log(inMembers);
                     }
 
                     if (row.direction === "OUT") {
                         outMembers.filter((member) => member === row.username);
-                        console.log(outMembers);
                     }
                 });
 
@@ -237,7 +228,6 @@ export default function Groups() {
                 setMembers(tableData);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to get group members'),
                 message: err.response.data.error,

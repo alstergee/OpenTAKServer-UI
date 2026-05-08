@@ -97,7 +97,6 @@ export default function Missions() {
                     })
                 }
             }).catch(err => {
-                console.log(err);
                 setInviting(false);
                 notifications.show({
                     title: t('Failed to send mission invitation'),
@@ -209,7 +208,6 @@ export default function Missions() {
                 }
             }).catch(err => {
                 setLoading(false);
-                console.log(err);
                 notifications.show({
                     title: t('Failed to get missions'),
                     message: err.response.data.error,
@@ -348,7 +346,6 @@ export default function Missions() {
 
     function getAllGroups() {
         axios.get(apiRoutes.allGroups).then(r => {
-            console.log(r);
             if (r.status === 200) {
                 "".toLowerCase()
                 const all_groups: ComboboxItem[] = [];
@@ -358,7 +355,6 @@ export default function Missions() {
                 setAllGroups(all_groups);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to get group list'),
                 message: err.response.data.error,

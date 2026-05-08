@@ -84,7 +84,6 @@ export default function VideoStreams() {
             }
         }).catch(err => {
             setLoading(false);
-            console.log(err);
             notifications.show({
                 title: t('Recording Failed'),
                 message: err.response.data.error,
@@ -185,7 +184,6 @@ export default function VideoStreams() {
             }
         }).catch(err => {
             setLoading(false);
-            console.log(err);
             notifications.show({
                 title: t('Failed to get video streams'),
                 message: err.response.data.error,
@@ -220,13 +218,11 @@ export default function VideoStreams() {
             getVideoStreams();
         }).catch(err => {
             setLoading(false);
-            console.log(err)
             notifications.show({
                 title: t('Failed to delete video stream'),
                 message: err.response.data.error,
                 color: 'red',
             });
-            console.log(err);
         });
     }
 
@@ -244,7 +240,6 @@ export default function VideoStreams() {
             }
         }).catch(err => {
             setLoading(false);
-            console.log(err);
             notifications.show({
                 title: t('Failed to add video stream'),
                 message: err.response.data.error,

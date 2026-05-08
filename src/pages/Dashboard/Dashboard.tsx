@@ -100,7 +100,6 @@ export default function Dashboard() {
                     setOsRelease(r.data.os_release);
                 }
             }).catch(err => {
-                console.log(err);
             });
     }, []);
 

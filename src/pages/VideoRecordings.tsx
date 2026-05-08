@@ -139,7 +139,6 @@ export default function VideoRecordings() {
             }
         }).catch(err => {
             setLoading(false);
-            console.log(err);
             notifications.show({
                 title: t('Failed to get recordings'),
                 message: err.response.data.error,
@@ -175,13 +174,11 @@ export default function VideoRecordings() {
             getVideoRecordings();
         }).catch(err => {
             setLoading(false);
-            console.log(err);
             notifications.show({
                 title: t('Failed to delete recording'),
                 message: err.response.data.error,
                 color: 'red',
             });
-            console.log(err);
         });
     }
 

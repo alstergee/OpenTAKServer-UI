@@ -88,7 +88,6 @@ export default function Users() {
             }
         }).catch((err) => {
             setLoading(false);
-            console.log(err);
             notifications.show({
                 title: t('Failed to get users'),
                 message: err.response.data.error,
@@ -111,7 +110,6 @@ export default function Users() {
                 setAllGroups(all_groups);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to get group list'),
                 message: err.response.data.error,
@@ -127,7 +125,6 @@ export default function Users() {
                 getMemberships(username);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed remove user from group'),
                 message: err.response.data.error,
@@ -177,7 +174,6 @@ export default function Users() {
                 if (direction === 'IN') setInGroups([]); else setOutGroups([]);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to add user to group'),
                 message: err.response.data.error,
@@ -199,7 +195,6 @@ export default function Users() {
                     getUsers();
                 }
             }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: t('Failed to delete user'),
                 message: err.response.data.error,

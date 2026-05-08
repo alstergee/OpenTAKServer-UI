@@ -69,7 +69,6 @@ export default function Login(props: PaperProps) {
                 setCsrfToken(r.data.response.csrf_token);
             });
         } catch (err) {
-            console.log(err);
         }
     }, []);
 
@@ -166,7 +165,6 @@ export default function Login(props: PaperProps) {
                 getUser();
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 title: 'Authentication Failed',
                 message: err.response.data.response.errors[0],

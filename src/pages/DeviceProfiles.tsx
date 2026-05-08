@@ -112,7 +112,6 @@ export default function DeviceProfiles() {
                 setProfiles(tableData);
             }
         }).catch(err => {
-            console.log(err);
             notifications.show({
                 icon: <IconX />,
                 message: err.response.data.message,
@@ -162,12 +161,11 @@ export default function DeviceProfiles() {
                     setAddProfile(false);
                 }
             }).catch(err => {
-                console.log(err);
                 notifications.show({
                     icon: <IconX />,
                     color: 'red',
                     title: t('Failed to add device profile'),
-                    message: e.response.data.error,
+                    message: err?.response?.data?.error ?? err?.message ?? 'unknown',
                 });
         });
     }
@@ -180,7 +178,6 @@ export default function DeviceProfiles() {
                     setDeleteModalOpen(false);
                 }
             }).catch(err => {
-                console.log(err);
                 notifications.show({
                     icon: <IconX />,
                     title: t('Failed to delete device profile'),
