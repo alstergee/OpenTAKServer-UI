@@ -1,11 +1,11 @@
-import {Table} from '@mantine/core';
+import { ActionIcon, Modal, Group, Button, Text, Table } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
-import {IconCheck, IconDownload, IconPlus, IconX} from '@tabler/icons-react';
+import { IconCheck, IconTrash, IconX } from '@tabler/icons-react';
 import axios from '../axios_config';
 import { apiRoutes } from '../apiRoutes';
-import {Link} from "react-router";
-import {t} from "i18next";
+import { Link } from "react-router";
+import { t } from "i18next";
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 
 export interface EUD {
@@ -19,6 +19,7 @@ export interface EUD {
     version: string;
     last_event_time: string;
     last_status: string;
+    actions?: React.ReactNode;
 }
 
 export default function EUDs() {
@@ -32,6 +33,38 @@ export default function EUDs() {
         columnAccessor: 'last_event_time',
         direction: 'desc',
     });
+    const [confirmDelete, setConfirmDelete] = useState<{ uid: string; callsign: string } | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
+    function deleteEud(uid: string, callsign: string) {
+        setDeleting(true);
+        axios.delete(`${apiRoutes.eud}/${encodeURIComponent(uid)}`).then(r => {
+            setDeleting(false);
+            setConfirmDelete(null);
+            if (r.status === 200 && r.data?.success) {
+                notifications.show({
+                    title: t('EUD deleted'),
+                    message: callsign,
+                    icon: <IconCheck />, color: 'green',
+                });
+                getEuds();
+            } else {
+                notifications.show({
+                    title: t('Failed to delete EUD'),
+                    message: r.data?.error || 'unknown',
+                    icon: <IconX />, color: 'red',
+                });
+            }
+        }).catch(err => {
+            setDeleting(false);
+            setConfirmDelete(null);
+            notifications.show({
+                title: t('Failed to delete EUD'),
+                message: err.response?.data?.error || err.message,
+                icon: <IconX />, color: 'red',
+            });
+        });
+    }
 
     function getEuds() {
         if (loading) {
@@ -47,6 +80,17 @@ export default function EUDs() {
 
                 r.data.results.map((row:any) => {
                     const callsign_link = <Link to={`/eud_stats?uid=${row.uid}&callsign=${row.callsign}`}>{row.callsign}</Link>
+                    const actions = (
+                        <ActionIcon
+                            variant="subtle"
+                            color="red"
+                            size="sm"
+                            onClick={() => setConfirmDelete({ uid: row.uid, callsign: row.callsign })}
+                            title={t('Delete EUD') as string}
+                        >
+                            <IconTrash size={16} />
+                        </ActionIcon>
+                    );
                     let eud: EUD = {
                         callsign: callsign_link,
                         device: row.device,
@@ -57,7 +101,8 @@ export default function EUDs() {
                         uid: row.uid,
                         version: row.version,
                         last_event_time: row.last_event_time,
-                        last_status: row.last_status
+                        last_status: row.last_status,
+                        actions,
                     }
                     rows.push(eud);
                 });
@@ -70,7 +115,7 @@ export default function EUDs() {
             setLoading(false);
             notifications.show({
                 title: t('Failed to get EUDs'),
-                message: err.response.data.error,
+                message: err.response?.data?.error || err.message,
                 icon: <IconX />,
                 color: 'red',
             })
@@ -96,11 +141,19 @@ export default function EUDs() {
                     striped
                     highlightOnHover
                     records={euds}
-                    columns={[{accessor: "callsign", title: t("Callsign"), sortable: true}, {accessor: "device", title: t("Device"), sortable: true},
-                        {accessor: "platform", title: t("Platform"), sortable: true}, {accessor: "os", title: t("OS"), sortable: true},
-                        {accessor: "phone_number", title: t("Phone Number"), sortable: true}, {accessor: "username", title: t("Username")},
-                        {accessor: "uid", title: t("UID")}, {accessor: "version", title: t("Version"), sortable: true},
-                        {accessor: "last_event_time", title: t("Last Event Time"), sortable: true}, {accessor: "last_status", title: t("Last Event"), sortable: true}]}
+                    columns={[
+                        {accessor: "callsign", title: t("Callsign"), sortable: true},
+                        {accessor: "device", title: t("Device"), sortable: true},
+                        {accessor: "platform", title: t("Platform"), sortable: true},
+                        {accessor: "os", title: t("OS"), sortable: true},
+                        {accessor: "phone_number", title: t("Phone Number"), sortable: true},
+                        {accessor: "username", title: t("Username")},
+                        {accessor: "uid", title: t("UID")},
+                        {accessor: "version", title: t("Version"), sortable: true},
+                        {accessor: "last_event_time", title: t("Last Event Time"), sortable: true},
+                        {accessor: "last_status", title: t("Last Event"), sortable: true},
+                        {accessor: "actions", title: "", width: 50, textAlign: "center"},
+                    ]}
                     page={activePage}
                     onPageChange={(p) => setPage(p)}
                     onRecordsPerPageChange={setPageSize}
@@ -113,6 +166,28 @@ export default function EUDs() {
                     minHeight={180}
                 />
             </Table.ScrollContainer>
+
+            <Modal
+                opened={!!confirmDelete}
+                onClose={() => !deleting && setConfirmDelete(null)}
+                title={t('Delete EUD?')}
+                centered
+            >
+                <Text size="sm" mb="md">
+                    {t('Permanently delete')} <strong>{confirmDelete?.callsign}</strong> ({confirmDelete?.uid})?
+                    {' '}
+                    {t('This cascades through points, CoT, certificates, and chat history.')}
+                </Text>
+                <Group justify="flex-end">
+                    <Button variant="default" onClick={() => setConfirmDelete(null)} disabled={deleting}>
+                        {t('Cancel')}
+                    </Button>
+                    <Button color="red" loading={deleting}
+                        onClick={() => confirmDelete && deleteEud(confirmDelete.uid, confirmDelete.callsign)}>
+                        {t('Delete')}
+                    </Button>
+                </Group>
+            </Modal>
         </>
     );
 }

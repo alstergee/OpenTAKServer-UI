@@ -20,6 +20,7 @@ import 'leaflet.fullscreen';
 import 'leaflet.fullscreen/Control.FullScreen.css';
 import Arrow from './Arrow';
 import Video from './Video';
+import KmlOverlay from './KmlOverlay';
 
 export default function Map() {
     const [markers, setMarkers] = useState<{ [uid: string]: L.Marker }>({});
@@ -27,6 +28,7 @@ export default function Map() {
     const [rbLines, setRBLines] = useState<{ [uid: string]: L.Polyline }>({});
     const [fovs, setFovs] = useState<{ [uid: string]: L.Polygon }>({});
     const [haveMapState, setHaveMapState] = useState(false);
+    const [kmlFiles, setKmlFiles] = useState<string[]>([]);
     const [opened, { open, close }] = useDisclosure(false);
     const [drawerTitle, setDrawerTitle] = useState('');
     const [detailRows, setDetailRows] = useState<ReactElement[]>([]);
@@ -37,6 +39,36 @@ export default function Map() {
     const rbLinesLayer = new L.LayerGroup();
     const markersLayer = new L.LayerGroup();
     const fovsLayer = new L.LayerGroup();
+
+    // Pull the list of KML/KMZ files synced by the MapMarker plugin so each
+    // becomes a toggleable overlay in the LayersControl. Refetch every 60s so
+    // newly-synced files appear in the UI without a full page reload.
+    useEffect(() => {
+        let active = true;
+        async function loadKmlList() {
+            try {
+                const r = await fetch('/api/plugins/ots_mapmarker_plugin/files', {
+                    credentials: 'include',
+                });
+                if (!r.ok || !active) return;
+                const d = await r.json();
+                if (!active) return;
+                const names = (d.files || [])
+                    .map((f: any) => f.name as string)
+                    .filter((n: string) => /\.(kml|kmz)$/i.test(n))
+                    .sort();
+                setKmlFiles(names);
+            } catch {
+                /* leave list as-is on transient errors */
+            }
+        }
+        loadKmlList();
+        const id = window.setInterval(loadKmlList, 60_000);
+        return () => {
+            active = false;
+            window.clearInterval(id);
+        };
+    }, []);
 
     function formatDrawer(eud:any, point:any) {
         const detail_rows:ReactElement[] = [];
@@ -483,7 +515,11 @@ export default function Map() {
                 >
                     <MapContext />
                     <ScaleControl />
-                    <LayersControl>
+                    {/* Single consolidated LayersControl: base layers + tile
+                        overlays + dynamically-loaded MapMarker KML overlays.
+                        Brian's upstream had this split into two controls
+                        which stacked at top-right; collapsing keeps one box. */}
+                    <LayersControl position="topright">
                         <LayersControl.BaseLayer name="OSM" checked>
                             <TileLayer
                               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -508,8 +544,7 @@ export default function Map() {
                         <LayersControl.BaseLayer name="ESRI World Topo">
                             <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}" minZoom={0} maxZoom={20} />
                         </LayersControl.BaseLayer>
-                    </LayersControl>
-                    <LayersControl position="topright">
+
                         <LayersControl.Overlay name="Google Street View Coverage">
                             <TileLayer
                               url="https://www.google.com/maps/vt?pb=!1m7!8m6!1m3!1i{z}!2i{x}!3i{y}!2i9!3x1!2m8!1e2!2ssvv!4m2!1scc!2s*211m3*211e2*212b1*213e2*212b1*214b1!4m2!1ssvl!2s*211b0*212b1!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m4!1e0!8m2!1e1!1e1!6m6!1e12!2i2!11e0!39b0!44e0!50e0"
@@ -533,6 +568,22 @@ export default function Map() {
                         <LayersControl.Overlay name="Google Terrain Overlay">
                             <TileLayer url="http://mt1.google.com/vt/lyrs=t&amp;x={x}&amp;y={y}&amp;z={z}" pane="overlayPane" />
                         </LayersControl.Overlay>
+
+                        {/* MapMarker KML overlays — populated from the plugin's
+                            /files endpoint by the useEffect at the top of this
+                            component. Each entry is independently toggleable
+                            and auto-refreshes every 5 minutes via KmlOverlay. */}
+                        {kmlFiles.map((name) => {
+                            // Pretty display: drop "mapmarker_" prefix + ".kml" suffix, _ → space.
+                            let label = name;
+                            if (label.startsWith('mapmarker_')) label = label.slice('mapmarker_'.length);
+                            label = label.replace(/\.(kml|kmz)$/i, '').replace(/_/g, ' ');
+                            return (
+                                <LayersControl.Overlay key={name} name={`📍 ${label}`}>
+                                    <KmlOverlay filename={name} />
+                                </LayersControl.Overlay>
+                            );
+                        })}
                     </LayersControl>
                 </MapContainer>
             </Paper>
