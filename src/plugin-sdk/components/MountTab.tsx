@@ -56,14 +56,21 @@ export function MountTab({ mount }: MountTabProps): React.ReactElement | null {
     return null;
   }
 
+  // Layout note: the dashboard's AppShell.Main is the parent and its
+  // height is content-driven, NOT viewport-fixed — `height: 100%` on a
+  // flex child therefore collapses to auto and `flex: 1` has nothing to
+  // expand into. We solve that with a hard viewport calc: 100vh minus
+  // the appshell header (60px), minus AppShell.Main's vertical padding
+  // (~32px), minus our own title row (~56px). Slightly conservative;
+  // plugin authors who want true 100% height can switch to a non-iframe
+  // tab kind in the future.
+  const HEADER_OFFSET_PX = 60;       // var(--app-shell-header-height, 60px)
+  const MAIN_PADDING_PX = 32;        // AppShell.Main default padding (top+bottom rough)
+  const TITLE_ROW_PX = 56;           // our IconByName + <Title> row
+  const iframeHeight = `calc(100vh - ${HEADER_OFFSET_PX + MAIN_PADDING_PX + TITLE_ROW_PX}px)`;
+
   return (
-    <Stack
-      gap="sm"
-      style={{
-        height: '100%',
-        minHeight: 'calc(100vh - var(--app-shell-header-height, 60px))',
-      }}
-    >
+    <Stack gap="sm">
       <Box
         px="md"
         pt="md"
@@ -79,7 +86,7 @@ export function MountTab({ mount }: MountTabProps): React.ReactElement | null {
           {mount._plugin}
         </Text>
       </Box>
-      <Box style={{ flex: 1, minHeight: 0 }}>
+      <Box style={{ minHeight: 0 }}>
         <iframe
           title={mount.label}
           aria-label={mount.label}
@@ -90,7 +97,7 @@ export function MountTab({ mount }: MountTabProps): React.ReactElement | null {
           src={pluginUiUrl(mount._plugin, splat)}
           style={{
             width: '100%',
-            height: '100%',
+            height: iframeHeight,
             border: 0,
             display: 'block',
             backgroundColor: 'var(--mantine-color-body)',
