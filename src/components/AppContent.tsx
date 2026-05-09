@@ -7,6 +7,8 @@ import routes, { getPluginRoutes } from '../routes';
 import PrivateRoute from '../PrivateRoute';
 import { useMounts } from '../plugin-sdk/mount-registry';
 
+const Error404 = React.lazy(() => import('../pages/Errors/Error404'));
+
 export const AppContent = () => {
     // `useMounts()` re-renders this tree whenever the mount registry changes
     // (60s plugin loader poll, or an explicit refresh). That's how a freshly
@@ -40,6 +42,11 @@ export const AppContent = () => {
                     )
                 ))}
                 <Route path="/" element={<PrivateRoute />} />
+                {/* Catch-all so unmatched URLs render the 404 page instead
+                    of blanking the content pane (sidebar visible, main
+                    column empty). Was the failure mode after we retired
+                    the legacy /plugin?name=… iframe page on 2026-05-09. */}
+                <Route path="*" element={<Error404 />} />
             </Routes>
         </Suspense>
     );

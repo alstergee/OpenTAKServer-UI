@@ -16,6 +16,7 @@
  */
 import React from 'react';
 import { Box, Stack, Text, Title } from '@mantine/core';
+import { useParams } from 'react-router';
 import { t } from 'i18next';
 import { useRouteTitle } from '../../useRouteTitle';
 import type { TabMount } from '../types';
@@ -29,19 +30,27 @@ export interface MountTabProps {
 /**
  * Build the iframe URL for a plugin tab.
  *
- * The server contract (Phase A.4 loader_v2.py) is that every v2 plugin gets
- * its static UI mounted at `/api/plugins/<slug>/ui`. The manifest's `path`
- * field is the *route* on the dashboard (e.g. `/plugin/mapmarker`), not the
- * iframe URL — so we always derive the iframe URL from the slug.
+ * Server contract (loader_v2.py): every v2 plugin's static UI is mounted at
+ * `/api/plugins/<slug>/ui`. The dashboard route is `/plugin/<slug>/*` — a
+ * wildcard, so the user can deep-link to any sub-path under the plugin
+ * (e.g. `/plugin/<slug>/config`). We forward that captured tail to the
+ * iframe via URL hash so plugins that route internally on `location.hash`
+ * land on the right view, while plugins that ignore the hash just show
+ * their index page (unchanged behaviour). Hash routing keeps everything
+ * inside one iframe load — no per-subpath server route required.
  */
-function pluginUiUrl(slug: string): string {
-  return `/api/plugins/${encodeURIComponent(slug)}/ui`;
+function pluginUiUrl(slug: string, splat: string): string {
+  const base = `/api/plugins/${encodeURIComponent(slug)}/ui`;
+  const trimmed = splat.replace(/^\/+/, '').replace(/\/+$/, '');
+  return trimmed ? `${base}#${trimmed}` : base;
 }
 
 export function MountTab({ mount }: MountTabProps): React.ReactElement | null {
-  // Title hook must be called unconditionally (rules of hooks) — even when
-  // we're about to bail out below. The role check happens after.
+  // Hooks must run unconditionally per the rules of hooks; the role gate
+  // check happens after.
   useRouteTitle(mount.label);
+  const params = useParams();
+  const splat = (params['*'] ?? '').toString();
 
   if (!isMountAllowed(mount.roles)) {
     return null;
@@ -74,7 +83,11 @@ export function MountTab({ mount }: MountTabProps): React.ReactElement | null {
         <iframe
           title={mount.label}
           aria-label={mount.label}
-          src={pluginUiUrl(mount._plugin)}
+          // `key` forces the iframe to remount when the splat changes so a
+          // user navigating between sub-paths gets the new hash applied
+          // (browsers don't reload an iframe for a hash-only src change).
+          key={`${mount._plugin}:${splat}`}
+          src={pluginUiUrl(mount._plugin, splat)}
           style={{
             width: '100%',
             height: '100%',

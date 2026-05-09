@@ -72,25 +72,30 @@ const routes: RouteEntry[] = [
 /**
  * Build the dynamic route table for installed plugins' `kind: 'tab'` mounts.
  *
- * Each tab mount becomes a real client-side route at
- * `/plugin/<slug><mount.path>` rendering `<MountTab mount={spec} />`. The
- * caller (`AppContent.tsx`) reads this on every render via the `useMounts`
- * hook so installs/uninstalls reflect without a page reload.
+ * Each plugin gets ONE wildcard route at `/plugin/<slug>/*` so any sub-path
+ * under the plugin's domain renders `<MountTab>`. The captured splat is
+ * forwarded to the iframe via URL hash (so the plugin's static UI can
+ * react to deep links without server-side per-subpath routes).
+ *
+ * Why a single wildcard per plugin instead of one route per tab mount: the
+ * iframe handles its own internal navigation, so we don't need to register
+ * each declared tab path as a distinct dashboard route. If a plugin ships
+ * multiple tab mounts, the first one wins for hosting; the others still
+ * appear in the navbar via their `kind: 'navbar_group_item'` mounts.
+ *
+ * Reactive: `AppContent.tsx` calls this on every render via `useMounts()`,
+ * so installing/removing a plugin updates the route table without reload.
  */
 export function getPluginRoutes(): RouteEntry[] {
   const tabs = mountRegistry.byKind('tab');
-  const seen = new Set<string>();
+  const seenSlugs = new Set<string>();
   const out: RouteEntry[] = [];
   for (const mount of tabs) {
+    if (seenSlugs.has(mount._plugin)) continue;
+    seenSlugs.add(mount._plugin);
     const slug = encodeURIComponent(mount._plugin);
-    // mount.path is allowed to start with `/`; normalise so the joined path
-    // is exactly one slash between segments.
-    const tail = mount.path.startsWith('/') ? mount.path : `/${mount.path}`;
-    const fullPath = `/plugin/${slug}${tail}`;
-    if (seen.has(fullPath)) continue;
-    seen.add(fullPath);
     out.push({
-      path: fullPath,
+      path: `/plugin/${slug}/*`,
       name: `Plugin: ${mount._plugin}`,
       element: MountTab,
       mount,
