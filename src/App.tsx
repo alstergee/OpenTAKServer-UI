@@ -17,6 +17,12 @@ const Login = React.lazy(() => import('./pages/Login/Login'));
 const Error404 = React.lazy(() => import('./pages/Errors/Error404'));
 const DefaultLayout = React.lazy(() => import('./DefaultLayout'));
 const PasswordReset = React.lazy(() => import('./pages/PasswordReset'));
+// Plugin SDK v2 — global modal host. Subscribes to the mount registry and
+// renders one `<MountModal>` per registered `kind: 'modal'` mount so plugin
+// code anywhere in the tree can open them via the `otsModal.open(slug)` API.
+const GlobalModalsHost = React.lazy(() =>
+  import('./plugin-sdk/components/MountModal').then((m) => ({ default: m.GlobalModalsHost })),
+);
 
 // Persist color scheme across logins. Mantine 7+ does NOT auto-save without an
 // explicit colorSchemeManager — that's why the toggle reset to light on every
@@ -58,6 +64,9 @@ export default function App() {
         >
           <Notifications />
           <BrowserRouter>
+              <React.Suspense fallback={null}>
+                  <GlobalModalsHost />
+              </React.Suspense>
               <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/404" element={<Error404 />} />

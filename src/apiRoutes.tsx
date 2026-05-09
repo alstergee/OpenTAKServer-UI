@@ -66,4 +66,15 @@ export const apiRoutes = {
   takgovIcon: '/api/takgov/icon',
   takgovPlugin: '/api/takgov/plugin',
   language: '/api/language',
+  // Plugin SDK v2 — admin endpoints. The bare `pluginsV2*` entries (without
+  // a trailing slug-segment) are used either as-is or as a prefix; the UI
+  // appends the slug + suffix at the call site (e.g. `${pluginsV2Manifest}/${slug}/manifest`).
+  pluginsV2Mounts: '/api/plugins/v2/mounts',
+  pluginsV2Installed: '/api/plugins/v2/installed',
+  pluginsV2Marketplace: '/api/plugins/v2/marketplace',
+  pluginsV2Manifest: '/api/plugins/v2',                 // suffix /<slug>/manifest
+  pluginsV2Install: '/api/plugins/v2/install',
+  pluginsV2Uninstall: '/api/plugins/v2',                // suffix /<slug>/uninstall
+  pluginsV2Enable: '/api/plugins/v2',                   // suffix /<slug>/enable
+  pluginsV2Disable: '/api/plugins/v2',                  // suffix /<slug>/disable
 };

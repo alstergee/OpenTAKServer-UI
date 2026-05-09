@@ -25,6 +25,7 @@ import { apiRoutes } from './apiRoutes';
 import Navbar from './components/Navbar/Navbar';
 import { socket } from './socketio';
 import { useRouteTitle } from './useRouteTitle';
+import { startPluginLoader } from './plugin-sdk/plugin-loader';
 import {t} from "i18next";
 
 export function DefaultLayout() {
@@ -57,6 +58,15 @@ export function DefaultLayout() {
         window.addEventListener('mc-auth-expired', onAuthExpired);
         return () => window.removeEventListener('mc-auth-expired', onAuthExpired);
     }, [navigate]);
+
+    // Plugin SDK v2 — start the mount-registry poller. Re-fetches every 60 s
+    // so server-side plugin install / uninstall / enable / disable propagates
+    // into the UI without a page reload. The cleanup stops the interval when
+    // DefaultLayout unmounts (logout, route flip).
+    useEffect(() => {
+        const stop = startPluginLoader();
+        return stop;
+    }, []);
 
     useEffect(() => {
         function onConnect() {

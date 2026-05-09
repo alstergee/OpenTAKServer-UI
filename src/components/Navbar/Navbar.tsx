@@ -53,6 +53,8 @@ import { socket } from '../../socketio';
 import MeshtasticLogo from './MeshtasticLogo';
 import {DateTimePicker} from "@mantine/dates";
 import {t} from "i18next";
+import { useMountsByKind } from '../../plugin-sdk/mount-registry';
+import MountNavbarItem from '../../plugin-sdk/components/MountNavbarItem';
 
 const navbarLinks = [
     { link: '/dashboard', label: t('Dashboard'), icon: IconDashboard },
@@ -76,6 +78,22 @@ const adminLinks = [
     { link: '/server_plugin_manager', label: t('Server Plugin Manager'), icon: IconPlugConnected },
     { link: '/link_account', 'label': t('Link TAK.gov Account'), icon: IconLink}
 ];
+
+/**
+ * Plugin SDK v2 — render every `kind: 'navbar_group_item'` mount as a
+ * Mantine `<NavLink>` inside the host's "Plugins" group. Reactive via
+ * `useMountsByKind` so installs/uninstalls update the menu without a reload.
+ */
+function RenderPluginNavItems(): ReactElement {
+    const items = useMountsByKind('navbar_group_item');
+    return (
+        <>
+            {items.map((m) => (
+                <MountNavbarItem key={`${m._plugin}:${m.path}`} mount={m} />
+            ))}
+        </>
+    );
+}
 
 interface ATAKQrCode {
     qr_string: string;
@@ -267,7 +285,20 @@ export default function Navbar() {
                         {admin_links}
                     </NavLink>
                     <NavLink className={classes.link} key="plugins" leftSection={<IconPlug className={classes.linkIcon} stroke={1.5} />} label={t("Plugins")} >
+                        <NavLink
+                            className={classes.link}
+                            component={Link}
+                            key="plugins-root"
+                            active={location.pathname === '/plugins' || undefined}
+                            to="/plugins"
+                            label={t('Plugins')}
+                            leftSection={<IconPuzzle className={classes.linkIcon} stroke={1.5} />}
+                            aria-label={t('Open the Plugins page')}
+                            title={t('Open the Plugins page')}
+                            mt="md"
+                        />
                         {pluginNavLinks}
+                        <RenderPluginNavItems />
                     </NavLink>
                 </div> : ''}
             <div className={classes.footer}>

@@ -24,7 +24,10 @@ const ROUTE_TITLES: ReadonlyArray<readonly [string, string]> = [
     ['/tf_setup', '2FA Setup'],
     ['/profile', 'Profile'],
     ['/link_takgov', 'TAK.gov Link'],
-    ['/plugin', 'Plugin'],   // /plugin?name=… (least specific, last)
+    ['/plugins/docs', 'Plugin Docs'],  // /plugins/docs → E.2 docs page (most specific)
+    ['/plugins', 'Plugins'],   // /plugins → SDK v2 root listing page
+    ['/plugin/', 'Plugin'],    // /plugin/<slug>/… → SDK v2 dynamic plugin tab
+    ['/plugin', 'Plugin'],     // /plugin?name=… (legacy v1 iframe — least specific)
     ['/map', 'Map'],
 ];
 
