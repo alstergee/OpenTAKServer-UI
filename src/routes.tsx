@@ -23,6 +23,7 @@ const Groups = React.lazy(() => import('./pages/Groups'))
 const EUDStats = React.lazy(() => import('./pages/EUDStats'));
 const Plugins = React.lazy(() => import('./pages/Plugins'));
 const PluginsDocs = React.lazy(() => import('./pages/PluginsDocs'));
+const PluginLegacyRedirect = React.lazy(() => import('./pages/PluginLegacyRedirect'));
 const LinkTAKGovAccount = React.lazy(() => import('./pages/LinkTakGov.tsx'));
 const UserProfile = React.lazy(() => import('./pages/UserProfile.tsx'));
 const MountTab = React.lazy(() => import('./plugin-sdk/components/MountTab'));
@@ -64,6 +65,8 @@ const routes: RouteEntry[] = [
   { path: '/eud_stats', name: 'EUDStats', element: EUDStats },
   { path: '/plugins', name: 'Plugins', element: Plugins },
   { path: '/plugins/docs', name: 'Plugin Docs', element: PluginsDocs },
+  // Legacy redirect — /plugin?name=<distro> bounces to /plugin/<slug>/.
+  { path: '/plugin', name: 'Plugin (legacy)', element: PluginLegacyRedirect },
   { path: '/link_account', name: 'Link TAK.gov Account', element: LinkTAKGovAccount },
   { path: '/profile/', name: 'User Profile', element: UserProfile },
   { path: '/profile/:username', name: 'User Profile', element: UserProfile },

@@ -55,6 +55,7 @@ import {DateTimePicker} from "@mantine/dates";
 import {t} from "i18next";
 import { useMountsByKind } from '../../plugin-sdk/mount-registry';
 import MountNavbarItem from '../../plugin-sdk/components/MountNavbarItem';
+import type { TabMount } from '../../plugin-sdk/types';
 
 const navbarLinks = [
     { link: '/dashboard', label: t('Dashboard'), icon: IconDashboard },
@@ -93,6 +94,42 @@ function RenderPluginNavItems(): ReactElement {
     );
 }
 
+/**
+ * Plugin SDK v2 — render every installed plugin's `kind: 'tab'` mount as
+ * a top-level NavLink under the "Plugins" group, linking to the v2
+ * dynamic route at `/plugin/<slug>/`. Replaces the old vanilla-only
+ * link generator that pointed at the legacy `/plugin?name=…` URL —
+ * those URLs 404 since the legacy iframe page was retired.
+ *
+ * Dedupes by slug so a plugin shipping multiple tab mounts only appears
+ * once in the sidebar (the wildcard route handles all sub-paths).
+ */
+function RenderPluginTabItems(): ReactElement {
+    const tabs = useMountsByKind('tab');
+    const location = useLocation();
+    const seen = new Set<string>();
+    const out: ReactElement[] = [];
+    for (const mount of tabs as TabMount[]) {
+        if (seen.has(mount._plugin)) continue;
+        seen.add(mount._plugin);
+        const to = `/plugin/${encodeURIComponent(mount._plugin)}/`;
+        out.push(
+            <NavLink
+                className={classes.link}
+                component={Link}
+                key={`tab-${mount._plugin}`}
+                active={location.pathname.startsWith(`/plugin/${encodeURIComponent(mount._plugin)}`) || undefined}
+                to={to}
+                label={mount.label}
+                leftSection={<IconPlugConnected className={classes.linkIcon} stroke={1.5} />}
+                aria-label={`Open ${mount.label}`}
+                title={mount.label}
+            />
+        );
+    }
+    return <>{out}</>;
+}
+
 interface ATAKQrCode {
     qr_string: string;
     sub: string;
@@ -111,9 +148,6 @@ export default function Navbar() {
     const location = useLocation();
     const [showItakQr, setShowItakQr] = useState(false);
     const [itakQrString, setItakQrString] = useState('');
-    const [plugins, setPlugins] = useState([]);
-    const [pluginNavLinks, setPluginNavLinks] = useState<ReactElement[]>([]);
-
     const [showAtakQr, setShowAtakQr] = useState(false);
     const [atakQR, setAtakQR] = useState<ATAKQrCode>({
         qr_string: "",
@@ -127,33 +161,6 @@ export default function Navbar() {
         disabled: false,
         total_uses: 0
     });
-
-    useEffect(() => {
-        get_plugins();
-    }, []);
-
-    useEffect(() => {
-        generatePluginLinks();
-    }, [plugins]);
-
-    const generatePluginLinks = () => {
-        if (plugins !== null) {
-            const links = plugins.map((plugin: any) => (
-                <NavLink
-                    className={classes.link}
-                    component={Link}
-                    key={plugin.distro}
-                    active={location.pathname + location.search === `/plugin?name=${plugin.distro}` || undefined}
-                    to={`/plugin?name=${plugin.distro}`}
-                    label={plugin.name}
-                    leftSection={<IconPlugConnected className={classes.linkIcon} stroke={1.5}/>}
-                    mt="md"
-                    onClick={() => {generatePluginLinks()}}
-                />
-            ))
-            setPluginNavLinks(links)
-        }
-    }
 
     const links = navbarLinks.map((item) => (
         <NavLink
@@ -209,13 +216,6 @@ export default function Navbar() {
         });
     };
 
-    const get_plugins = () => {
-        axios.get(apiRoutes.plugins).then(r => {
-            if (r.status === 200) {
-                setPlugins(r.data.plugins)
-            }
-        })
-    }
 
     function getAtakQr() {
         axios.get<ATAKQrCode>(apiRoutes.atakQrString, {}).then(r => {
@@ -295,7 +295,7 @@ export default function Navbar() {
                             title={t('Open the Plugins page')}
                             mt="md"
                         />
-                        {pluginNavLinks}
+                        <RenderPluginTabItems />
                         <RenderPluginNavItems />
                     </NavLink>
                 </div> : ''}
